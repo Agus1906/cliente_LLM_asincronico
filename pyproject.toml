@@ -1,0 +1,10 @@
+[project]
+name = "unified-async-llm-client"
+version = "1.0.0"
+requires-python = ">=3.12"
+description = "Cliente asíncrono unificado para OpenAI y Anthropic"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
+testpaths = ["tests"]
