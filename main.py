@@ -14,10 +14,15 @@ from schemas import ChatMessage
 async def demonstrate(provider: str | None) -> bool:
     try:
         async with AsyncLLMManager.from_env(provider) as manager:
-            messages = [ChatMessage(role="user", content="¿Qué es la entropía?")]
+            messages = [
+                ChatMessage(role="system", content="Respondé en español, en un solo párrafo de como máximo 60 palabras."),
+                ChatMessage(role="user", content="¿Qué es la entropía?"),
+            ]
             print(f"\nProveedor: {manager.client.provider}\nModo normal:")
             response = await manager.generate(messages)
             print(response.content if response.ok else response.error.model_dump_json())
+            if response.ok:
+                print(f"Fin: {response.finish_reason}")
             print("\nStreaming: ", end="", flush=True)
             success = response.ok
             async with aclosing(manager.stream(messages)) as events:

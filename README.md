@@ -11,7 +11,7 @@ En Windows / PowerShell, desde la carpeta del repositorio:
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
 En Linux / macOS:
@@ -19,7 +19,7 @@ En Linux / macOS:
 ```bash
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -r requirements-dev.txt
-cp .env.example .env
+test -f .env || cp .env.example .env
 ```
 
 No es necesario activar el entorno. Para ejecutar solamente la aplicación,
@@ -34,7 +34,7 @@ versiones efectivamente verificadas y permite reproducir el entorno completo:
 
 | Variable | Uso |
 | --- | --- |
-| `LLM_PROVIDER` | `openai` o `anthropic`; predeterminado `openai` |
+| `LLM_PROVIDER` | `openai` o `anthropic`; el ejemplo usa `anthropic`; sin variable se usa `openai` |
 | `OPENAI_API_KEY` | Credencial de OpenAI, obligatoria al usar ese proveedor |
 | `ANTHROPIC_API_KEY` | Credencial de Anthropic, obligatoria al usar ese proveedor |
 | `OPENAI_MODEL` | Identificador del modelo OpenAI habilitado para tu cuenta |
@@ -68,6 +68,9 @@ No hay que configurar ambas claves si se utiliza un solo proveedor.
 ```
 
 Cada proveedor recibe **«¿Qué es la entropía?»** en modo normal y luego streaming.
+La demostración agrega una instrucción `system` para responder en español en un
+párrafo de hasta 60 palabras, manteniendo acotado el consumo y evitando respuestas
+extensas con el límite de 256 tokens. Se muestra el motivo de fin en ambos modos.
 `both` ejecuta las demostraciones secuencialmente; todas las llamadas de red son
 asíncronas. No hace falta paralelizar dos peticiones para que sean no bloqueantes.
 Cada demostración realiza dos solicitudes facturables; `both` realiza cuatro,
@@ -187,8 +190,19 @@ El 7 de octubre de 2026 se verificó en Windows con **Python 3.12.15**:
   con código 1 y no muestra un traceback.
 - SDKs instalados: OpenAI 2.54.0 y Anthropic 0.125.0; Pydantic 2.13.5.
 
-Las llamadas reales quedan pendientes de configurar API keys y modelos. En el
-sandbox de esta sesión, Windows bloqueó el socket interno del event loop de
+El entorno local está configurado para Anthropic con una clave real en `.env`;
+la clave no forma parte del repositorio. Se utiliza el modelo
+`claude-haiku-4-5-20251001`, disponible para esa cuenta. El modelo del ejemplo
+anterior devolvió HTTP 404 y se reemplazó por este identificador disponible.
+OpenAI conserva su implementación y sus pruebas simuladas; la validación real
+de OpenAI requiere configurar su propia clave.
+
+El 8 de octubre de 2026 se ejecutó la demostración real de Anthropic en modo
+normal y streaming: ambos finalizaron con `end_turn`, sin truncamiento ni errores.
+Después del ajuste de la demostración se repitieron las 42 pruebas (aprobadas)
+y `pip check` (sin incompatibilidades).
+
+En el sandbox de esta sesión, Windows bloqueó el socket interno del event loop de
 asyncio; las pruebas se ejecutaron fuera de esa restricción, manteniendo todas
 las solicitudes HTTP simuladas. No se alteró la lógica de la aplicación para
 evitar esa limitación del entorno.
